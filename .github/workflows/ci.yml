@@ -1,0 +1,85 @@
+name: CI Pipeline - VetSync
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-and-test:
+    name: Build, Lint and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar SDK de .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restaurar dependencias NuGet
+        run: dotnet restore VetSync.slnx
+
+      - name: Ejecutar Linter (Verificacion de formato de codigo)
+        run: dotnet format --no-restore --verify-no-changes --verbosity normal
+
+      - name: Compilar solucion en modo Release
+        run: dotnet build VetSync.slnx --configuration Release --no-restore
+
+      - name: Ejecutar pruebas unitarias y recolectar cobertura
+        run: |
+          dotnet test VetSync.Tests/VetSync.Tests.csproj \
+            --configuration Release \
+            --no-build \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./TestResults
+
+      - name: Validar umbral de cobertura (Minimo 80%)
+        shell: bash
+        run: |
+          COVERAGE_FILE=$(find ./TestResults -name "coverage.cobertura.xml" | head -n 1)
+
+          if [ -z "$COVERAGE_FILE" ]; then
+            echo "Error: No se encontro el archivo de cobertura coverage.cobertura.xml."
+            exit 1
+          fi
+
+          echo "Archivo de cobertura localizado en: $COVERAGE_FILE"
+
+          # Extraer line-rate del reporte Cobertura XML
+          LINE_RATE=$(grep -oP '(?<=line-rate=")[0-9.]+' "$COVERAGE_FILE" | head -n 1)
+
+          if [ -z "$LINE_RATE" ]; then
+            echo "Error: No se pudo determinar el valor de cobertura de lineas."
+            exit 1
+          fi
+
+          # Calcular porcentaje usando awk
+          PERCENTAGE=$(awk "BEGIN {print $LINE_RATE * 100}")
+          REQUIRED=80.0
+
+          echo "Cobertura de lineas alcanzada: ${PERCENTAGE}%"
+          echo "Cobertura minima requerida: ${REQUIRED}%"
+
+          IS_BELOW=$(awk "BEGIN {print ($PERCENTAGE < $REQUIRED)}")
+
+          if [ "$IS_BELOW" -eq 1 ]; then
+            echo "Fallo de calidad: La cobertura (${PERCENTAGE}%) es inferior al umbral minimo exigido (${REQUIRED}%)."
+            exit 1
+          else
+            echo "Validacion exitosa: Cobertura dentro del umbral requerido."
+          fi
+
+      - name: Publicar artefactos de resultados de pruebas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage-results
+          path: ./TestResults
