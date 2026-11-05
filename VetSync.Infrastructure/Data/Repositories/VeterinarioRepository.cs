@@ -14,6 +14,7 @@ public class VeterinarioRepository : GenericRepository<Veterinario>, IVeterinari
     public async Task<IReadOnlyList<Veterinario>> ObtenerActivosAsync(CancellationToken cancellationToken = default)
     {
         return await _dbSet
+            .AsNoTracking()
             .Where(v => v.Activo)
             .OrderBy(v => v.NombreCompleto)
             .ToListAsync(cancellationToken);

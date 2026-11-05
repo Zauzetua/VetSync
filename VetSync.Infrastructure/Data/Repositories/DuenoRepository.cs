@@ -21,6 +21,7 @@ public class DuenoRepository : GenericRepository<Dueno>, IDuenoRepository
     public async Task<Dueno?> ObtenerPorCorreoAsync(string correoElectronico, CancellationToken cancellationToken = default)
     {
         return await _dbSet
+            .AsNoTracking()
             .Include(d => d.Mascotas)
             .FirstOrDefaultAsync(d => d.CorreoElectronico.ToLower() == correoElectronico.ToLower(), cancellationToken);
     }
@@ -28,6 +29,7 @@ public class DuenoRepository : GenericRepository<Dueno>, IDuenoRepository
     public override async Task<IReadOnlyList<Dueno>> ObtenerTodosAsync(CancellationToken cancellationToken = default)
     {
         return await _dbSet
+            .AsNoTracking()
             .Include(d => d.Mascotas)
             .OrderBy(d => d.NombreCompleto)
             .ToListAsync(cancellationToken);

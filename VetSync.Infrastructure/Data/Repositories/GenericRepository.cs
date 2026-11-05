@@ -22,7 +22,9 @@ public class GenericRepository<TEntidad> : IGenericRepository<TEntidad> where TE
 
     public virtual async Task<IReadOnlyList<TEntidad>> ObtenerTodosAsync(CancellationToken cancellationToken = default)
     {
-        return await _dbSet.ToListAsync(cancellationToken);
+        return await _dbSet
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
     }
 
     public virtual async Task AgregarAsync(TEntidad entidad, CancellationToken cancellationToken = default)

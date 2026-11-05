@@ -1,3 +1,4 @@
+using System.Net;
 using VetSync.Application.Common.Models;
 using VetSync.Application.Interfaces;
 using VetSync.Domain.Entities;
@@ -39,13 +40,14 @@ public class NotificacionService : INotificacionService
 
         foreach (var cita in citasProximas)
         {
-            var nombreMascota = cita.Mascota?.Nombre ?? "su mascota";
+            // Sanitizacion y codificacion contra inyeccion HTML/XSS en correos
+            var nombreMascotaSeguro = WebUtility.HtmlEncode(cita.Mascota?.Nombre ?? "su mascota");
+            var nombreDuenoSeguro = WebUtility.HtmlEncode(cita.Mascota?.Dueno?.NombreCompleto ?? "Cliente");
             var correoDestino = cita.Mascota?.Dueno?.CorreoElectronico ?? string.Empty;
-            var nombreDueno = cita.Mascota?.Dueno?.NombreCompleto ?? "Cliente";
             var fechaFormateada = cita.FechaHoraInicio.ToString("yyyy-MM-dd HH:mm");
 
-            var asunto = $"Recordatorio de cita veterinaria para {nombreMascota}";
-            var mensaje = $"Hola {nombreDueno}, le recordamos que {nombreMascota} tiene una cita programada para el {fechaFormateada}.";
+            var asunto = $"Recordatorio de cita veterinaria para {nombreMascotaSeguro}";
+            var mensaje = $"Hola {nombreDuenoSeguro}, le recordamos que {nombreMascotaSeguro} tiene una cita programada para el {fechaFormateada}.";
 
             var notificacion = new Notificacion
             {

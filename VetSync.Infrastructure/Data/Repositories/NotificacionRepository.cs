@@ -22,6 +22,7 @@ public class NotificacionRepository : GenericRepository<Notificacion>, INotifica
     public async Task<IReadOnlyList<Notificacion>> ObtenerPorEstadoAsync(EstadoNotificacion estado, CancellationToken cancellationToken = default)
     {
         return await _dbSet
+            .AsNoTracking()
             .Include(n => n.Cita)
             .Where(n => n.Estado == estado)
             .OrderBy(n => n.FechaProgramadaEnvio)

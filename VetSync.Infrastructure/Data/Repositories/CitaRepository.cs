@@ -25,6 +25,7 @@ public class CitaRepository : GenericRepository<Cita>, ICitaRepository
     public override async Task<IReadOnlyList<Cita>> ObtenerTodosAsync(CancellationToken cancellationToken = default)
     {
         return await _dbSet
+            .AsNoTracking()
             .Include(c => c.Mascota)
                 .ThenInclude(m => m!.Dueno)
             .Include(c => c.Veterinario)
@@ -35,6 +36,7 @@ public class CitaRepository : GenericRepository<Cita>, ICitaRepository
     public async Task<IReadOnlyList<Cita>> ObtenerPorVeterinarioYRangoAsync(int veterinarioId, DateTime inicio, DateTime fin, CancellationToken cancellationToken = default)
     {
         return await _dbSet
+            .AsNoTracking()
             .Include(c => c.Mascota)
             .Where(c => c.VeterinarioId == veterinarioId &&
                         c.Estado != EstadoCita.Cancelada &&
@@ -47,6 +49,7 @@ public class CitaRepository : GenericRepository<Cita>, ICitaRepository
     public async Task<bool> ExisteSolapamientoAsync(int veterinarioId, DateTime inicio, DateTime fin, int? citaIdExcluir = null, CancellationToken cancellationToken = default)
     {
         var consulta = _dbSet
+            .AsNoTracking()
             .Where(c => c.VeterinarioId == veterinarioId &&
                         c.Estado != EstadoCita.Cancelada &&
                         c.FechaHoraInicio < fin &&
@@ -63,6 +66,7 @@ public class CitaRepository : GenericRepository<Cita>, ICitaRepository
     public async Task<IReadOnlyList<Cita>> ObtenerCitasProximasSinNotificarAsync(DateTime limiteSuperior, CancellationToken cancellationToken = default)
     {
         return await _dbSet
+            .AsNoTracking()
             .Include(c => c.Mascota)
                 .ThenInclude(m => m!.Dueno)
             .Include(c => c.Veterinario)

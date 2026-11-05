@@ -23,6 +23,7 @@ public class HistorialMedicoRepository : GenericRepository<HistorialMedico>, IHi
     public async Task<IReadOnlyList<HistorialMedico>> ObtenerPorMascotaIdAsync(int mascotaId, CancellationToken cancellationToken = default)
     {
         return await _dbSet
+            .AsNoTracking()
             .Include(h => h.Veterinario)
             .Where(h => h.MascotaId == mascotaId)
             .OrderByDescending(h => h.FechaRegistro)

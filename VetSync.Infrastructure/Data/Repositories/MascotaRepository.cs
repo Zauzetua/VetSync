@@ -21,7 +21,10 @@ public class MascotaRepository : GenericRepository<Mascota>, IMascotaRepository
 
     public async Task<IReadOnlyList<Mascota>> ObtenerPorDuenoIdAsync(int duenoId, CancellationToken cancellationToken = default)
     {
+        // Se incluye la relacion Dueno para evitar problemas de N+1 y datos nulos en proyecciones
         return await _dbSet
+            .AsNoTracking()
+            .Include(m => m.Dueno)
             .Where(m => m.DuenoId == duenoId)
             .OrderBy(m => m.Nombre)
             .ToListAsync(cancellationToken);
@@ -30,6 +33,7 @@ public class MascotaRepository : GenericRepository<Mascota>, IMascotaRepository
     public override async Task<IReadOnlyList<Mascota>> ObtenerTodosAsync(CancellationToken cancellationToken = default)
     {
         return await _dbSet
+            .AsNoTracking()
             .Include(m => m.Dueno)
             .OrderBy(m => m.Nombre)
             .ToListAsync(cancellationToken);
