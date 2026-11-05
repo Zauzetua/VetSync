@@ -9,10 +9,10 @@ Este documento establece las directrices estrictas y estándares de arquitectura
 El proyecto adopta **Clean Architecture** dividida en proyectos desacoplados con responsabilidades unidireccionales:
 
 1. **VetSync.Domain**:
-   - Entidades de negocio, Value Objects, Enumeraciones, Excepciones de Dominio e Interfaces de Abstracción Primarias (repositorios y servicios de dominio).
+   - Entidades de negocio, Value Objects, Enumeraciones y Excepciones de Dominio.
    - **Regla estricta**: Cero dependencias externas o de frameworks (sin EF Core, sin ASP.NET Core).
 2. **VetSync.Application**:
-   - Casos de uso, DTOs, Mapeos, Interfaces de servicios de aplicación y validaciones de negocio.
+   - Interfaces de abstracción primarias (repositorios `ICitaRepository`, servicios `IEmailSenderService`, unidad de trabajo `IUnitOfWork`), casos de uso, DTOs, Mapeos y validaciones de negocio.
    - Depende únicamente de `VetSync.Domain`.
 3. **VetSync.Infrastructure**:
    - Persistencia de datos (Entity Framework Core, SQL Server), implementaciones de repositorios, adaptadores externos y servicios simulados (ej. `EnvioCorreoSimuladoService`).

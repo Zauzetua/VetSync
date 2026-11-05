@@ -1,26 +1,43 @@
+using Microsoft.EntityFrameworkCore;
+using VetSync.Application;
+using VetSync.Infrastructure;
+using VetSync.Infrastructure.Data.Context;
+using VetSync.Middlewares;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Configuracion de capas de Clean Architecture
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices(builder.Configuration);
+
+// Servicios de presentacion
+builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Aplicar migraciones pendientes al iniciar la aplicacion
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<VetSyncDbContext>();
+    dbContext.Database.Migrate();
+}
+
+// Middleware global de manejo de excepciones
+app.UseMiddleware<ManejadorExcepcionesMiddleware>();
+
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-
 app.UseRouting();
 
 app.UseAuthorization();
 
 app.MapStaticAssets();
-app.MapRazorPages()
-   .WithStaticAssets();
+app.MapControllers();
+app.MapRazorPages().WithStaticAssets();
 
 app.Run();

@@ -1,3 +1,7 @@
 <Solution>
-  <Project Path="VetSync/VetSync.csproj" />
+  <Project Path="VetSync.Domain/VetSync.Domain.csproj" />
+  <Project Path="VetSync.Application/VetSync.Application.csproj" />
+  <Project Path="VetSync.Infrastructure/VetSync.Infrastructure.csproj" />
+  <Project Path="VetSync.Tests/VetSync.Tests.csproj" />
+  <Project Path="VetSync/VetSync.Web.csproj" />
 </Solution>
